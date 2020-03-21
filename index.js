@@ -7,6 +7,36 @@ server.use(express.json());
 
 const users = ['Rudy', 'Fernando', 'Ric'];
 
+
+server.use((req, res, next) => {
+    console.time('Request');
+    console.log(`Requisição Método: ${req.method}; URL: ${req.url}`);
+
+    next();
+
+    console.timeEnd('Request');
+});
+
+function checkUserExists(req, res, next){
+    if(!req.body.name){
+        return res.status(400).json({ error: 'Usuário obrigatório' });
+    }
+
+    return next();
+}
+
+function checkUserInArray(req, res, next){
+    const user = users[req.params.index];
+
+    if(!user){
+        return res.status(400).json({ error: 'Usuário não encontrado' });
+    }
+
+    req.user = user;
+
+    return next();
+}
+
 // listar todos os usuários
 server.get('/users', (req, res) => {
     return res.json(users);
@@ -14,19 +44,19 @@ server.get('/users', (req, res) => {
 
 
 // listar 1 usuário
-server.get('/users/:index', (req, res) => {
+server.get('/users/:index', checkUserInArray, (req, res) => {
     //const nome = req.query.nome; // pegar uma tag da url, neste caso nome
     //const { id }  = req.params; // pegar parametros em rota, usando o params
-    const { index } = req.params;
-
-    return res.json(users[index]);
+    //const { index } = req.params;
+    return res.json(req.user);
+    //return res.json(users[index]);
     
     //return res.json({ message: `Hello ${id}` });
 });
 
 
 // criar usuario
-server.post('/users', (req, res) => {
+server.post('/users', checkUserExists, (req, res) => {
     const { name } = req.body;
 
     users.push(name);
@@ -35,7 +65,7 @@ server.post('/users', (req, res) => {
 });
 
 // editar usuario
-server.put('/users/:index', (req, res) => {
+server.put('/users/:index', checkUserInArray, checkUserExists, (req, res) => {
     const { index } = req.params;
     const { name } = req.body;
 
@@ -44,7 +74,7 @@ server.put('/users/:index', (req, res) => {
 });
 
 // excluir usuario
-server.delete('/users/:index', (req, res) => {
+server.delete('/users/:index', checkUserInArray, (req, res) => {
     const { index } = req.params;
 
     users.splice(index, 1);
