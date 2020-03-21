@@ -2,7 +2,7 @@ const express = require('express');
 
 const server = express();
 
-const users = ['Rudy', 'Zoio', 'Ric'];
+const users = ['Rudy', 'Fernando', 'Ric'];
 
 server.get('/users/:index', (req, res) => {
     //const nome = req.query.nome; // pegar uma tag da url, neste caso nome
